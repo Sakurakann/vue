@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Vue 自定义事件 Custom Events</title>
+	<script src="https://cdn.bootcss.com/vue/2.4.2/vue.min.js"></script>
+</head>
+<body>
+
+	<!-- 在组件组合中,父组件使用 prop 传递数据给子组件。但子组件怎么跟父组件通信呢？
+		这个时候 Vue 的自定义事件系统就派得上用场了。 -->
+	<!--
+
+	每个 Vue 实例都实现了事件接口，即：
+	使用 $on(eventName) 监听事件
+	使用 $emit(eventName) 触发事件
+
+	-->
+	<div id="event-mode">
+		{{totle}}
+		<!-- 使用v-on绑定监听事件,使子组件的事件向上传递
+			!!! v-on后的参数是子组件中$emit()中的绑定的触发事件的名称 !!!
+
+		子组件已经和它外部完全解耦了。它所做的只是报告自己的内部事件，
+		因为父组件可能会关心这些事件。请注意这一点很重要。
+		-->
+		<child v-on:increment="incrementparent"></child>
+		<child v-on:increment="incrementparent"></child>
+
+		<!-- 某个组件的根元素上监听一个原生事件。可以使用 v-on 的修饰符 .native -->
+		<child v-on:click.native="alert('原生事件哦')"></child>
+	</div>
+	<br/><hr>
+
+	<!-- sync 修饰符 -->
+	<!-- 在一些情况下,我们可能需要对一个prop进行双向绑定,但是这样会破坏单向数据流 -->
+	<div id="sync-prop">
+		<comp :show.sync="bar"></comp>
+	</div>
+
+
+	<script>
+
+		var vm = new Vue({
+			el:'#sync-prop',
+			data:{
+				bar:''
+			},
+			components:{
+				'comp':{
+					props:['show'],
+					template:'<input v-model="show">{{foo}}',
+					methods:{
+						uptfoo:function(newValue){
+							this.$emit('update:show',newValue)
+						}
+					}
+				}
+			}
+		})
+
+		Vue.component('child',
+			{
+				template:'<button v-on:click="incrementchild">{{childcount}}</button>',
+				props:{
+					childcount:{
+						type:Number,
+						default:0
+					}
+				},
+				methods:{
+					incrementchild:function(){
+						this.childcount++
+						this.$emit('increment')
+					}
+				}
+			})
+
+		var event_mode = new Vue({
+			el:'#event-mode',
+			data:{
+				totle:0
+			},
+			methods:{
+				incrementparent:function(){
+					this.totle++
+				}
+			}
+		})
+	</script>
+</body>
+</html>

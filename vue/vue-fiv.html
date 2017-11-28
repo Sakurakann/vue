@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Vue v-on 事件</title>
+	<script src="https://cdn.bootcss.com/vue/2.4.2/vue.min.js"></script>
+</head>
+</head>
+<body>
+	<!-- 可以用 v-on 指令监听 DOM 事件，并在触发时运行一些 JavaScript 代码。 -->
+	<div id="v-on-ex1">
+		<button @click="count += 1">Chlick to add 1</button>
+		<button @click="clear">Clear the count</button>
+		 <p>The button above has been clicked {{ count }} times.</p>
+	</div>
+
+	<div id="v-on-inline">
+		<button v-on:click="say('Hi')">SAY HI</button>
+
+		<!-- 有时也需要在内联语句处理器中访问原始的 DOM 事件。可以用特殊变量 $event 把它传入 !! 必须为$event !!! -->
+		<button v-on:click="sayEvent('NO',$event)">SAY NO</button>
+	</div>
+	<br/>
+
+	<!-- 在事件处理程序中调用 event.preventDefault() 或 event.stopPropagation() 是非常常见的需求。尽管我们可以在方法中轻松实现这点，但更好的方式是：方法只有纯粹的数据逻辑，而不是去处理 DOM 事件细节。
+	为了解决这个问题，Vue.js 为 v-on 提供了事件修饰符。之前提过，修饰符是由点开头的指令后缀来表示的。 
+	五个事件修饰符:
+	.stop
+	.prevent
+	.capture
+	.self
+	.once -->
+	<div id="v-on-event-modifier">
+		<!-- 阻止单击事件继续传播 有.stop修饰时 上层div的say会被阻止 -->
+		<div @click="say('div')">
+			<button @click.stop="say('stop')">.stop</button>
+		</div>
+
+		<!-- 提交事件不再重载页面  即数据重现不会消失 -->
+		<form @submit.prevent="say('prevent')">
+			<input type="text">
+			<input type="submit" value="form prevent">
+			<p v-model="showMsg">{{ showMsg }}</p>
+			<a href="http://cnblogs.com" target="_blank">普通链接</a>
+			<!-- 可以只有修饰符 -->
+  			<a @click.prevent href="http://cnblogs.com" target="_blank">取消默认行为</a>
+		</form>
+
+		<!-- 修饰符串联 -->
+		<button @click.stop.prevent="say('stop prevent')"> stop prevent</button>
+		
+		
+
+		<!-- 添加事件监听器时使用事件捕获模式 -->
+		<!-- 即内部元素触发的事件先在此处处理，然后才交由内部元素自身进行处理 -->
+		<div v-on:click.capture="say('outer capture')">
+			<input v-on:keyup.enter="sayInput()"  v-model="inputMsg">
+			<button @click.capture="say('Inner capture')">Inner</button>
+		</div>
+		
+
+		<br/>
+		<!-- 只当在 event.target 是当前元素自身时触发处理函数 除内部元素块 -->
+		<!-- 即事件不是从内部元素触发的 -->
+		<div @click="setVal" :style="styleObj1">
+		  <div :style="styleObj2">普通</div>
+		  <button @click="reset">还原</button>
+		</div>
+		<div @click.self="setVal" :style="styleObj1">
+		  <div :style="styleObj2">外层self</div>
+		  <button @click="reset">还原</button>
+		</div> 
+
+		<!-- 没有必要 -->
+		<div :style="styleObj1">
+		  <div @click.self.stop="setVal" :style="styleObj2">内层self</div>
+		  <button @click="reset">还原</button>
+		</div> 
+
+		<!-- 只能执行一次,重复点击无效 -->
+		<button @click.once="say('once')">.once</button>
+		<br/><br/>
+		<button @click="reset">还原</button>
+	</div>
+<hr/>
+<br/>
+	<div id=v-on-keymap-modifier>
+		<!-- 13是keyCode 相当于enter键 详见http://www.phpweblog.net/kiyone/archive/2007/04/19/1138.html -->
+		<input @keyup.13="showMsg" v-model="iMsg" key="enter" placeholder="按下enter查看" />{{ showMsgText }}
+		<br/>
+
+		<!-- 为了方便起见,提供了.enter等常用按键别名 -->
+		<input key="delete" @keyup.enter="showMsg" @keyup.delete="reset" v-model="iMsg" placeholder="按下delete或删除键重置" />{{ showMsgText }} 
+
+		<!-- 
+		.enter
+		.tab
+		.delete (捕获“删除”和“退格”键)
+		.esc
+		.space
+		.up
+		.down
+		.left
+		.right 
+
+		.ctrl
+		.alt
+		.shift
+		.meta
+		注意：在 Mac 系统键盘上，meta 对应 command 键 (⌘)。在 Windows 系统键盘 meta 对应 Windows 徽标键 (⊞)。在 Sun 操作系统键盘上，meta 对应实心宝石键 (◆)。在其他特定键盘上，尤其在 MIT 和 Lisp 机器的键盘、以及其后继产品，比如 Knight 键盘、space-cadet 键盘，meta 被标记为“META”。在 Symbolics 键盘上，meta 被标记为“META”或者“Meta”。
+			-->
+		<br/>
+		 <button style="width: 100px" @keyup.enter="enter" @keyup.tab="tab"@keyup.delete="delete1" @keyup.esc="esc" @keyup.space="space" @keyup.up="up" @keyup.down="down" @keyup.left="left" @keyup.right="right">{{message}}</button>
+
+		<br/>
+		<!-- 也可以使用组合键 -->
+		<!-- Alt+c(keyword=67) keydown-->
+		<input @keydown.alt.67="clear" v-model="inputClear" placeholder="按下alt+c 清除已输入"/>
+
+		<br/>
+		<input @click.ctrl="iAlert" v-model="inputAlert" placeholder="按下ctrl+鼠标左键 alert信息"/>
+		<!-- 当其他键也随一起按下时,动作发生. -->
+
+		<!-- .exact 修饰符应与其他系统修饰符组合使用，以指示处理程序只在精确匹配该按键组合时触发。 -->
+	</div>
+	
+
+	<!-- type="text/x-template" -->
+	<!-- 事件修饰 -->
+	<script >
+		var styleObj1 = {
+		  display:'inline-block',
+		  height:'60px',
+		  width:'120px',
+		  'background-color': 'lightblue'
+		};
+		var styleObj2 = {
+		  display:'inline-block',
+		  height:'30px',
+		  width:'60px',
+		  'background-color': 'lightgray'
+		};
+		var v_on_event_modifier = new Vue({
+			el:'#v-on-event-modifier',
+			data:{
+				showMsg:'',
+				inputMsg:'',
+				styleObj1:styleObj1,
+    			styleObj2:styleObj2
+			},
+			methods:{
+				say:function(msg) {
+					this.showMsg = msg
+					alert(msg)
+				},
+				goTo:function(){
+					window.location='https://www.baidu.com'
+				},
+				sayInput:function(){
+					alert(this.inputMsg)
+					this.inputMsg = ''
+				},
+				setVal(event){
+			      event.target.style.outline="solid"
+			    },
+			    reset(){
+			      history.go()
+			    }
+			}
+		})
+
+		var v_on_inline = new Vue({
+			el:'#v-on-inline',
+			methods:{
+				say:function(msg) {
+					alert(msg)
+				},
+				sayEvent:function(msg,e) {
+					if (e) {
+						e.preventDefault()
+					}
+					alert(msg)
+				}
+
+			}
+		})
+
+		var v_on_ex1 = new Vue({
+			el:'#v-on-ex1',
+			data:{
+				count:0
+			},
+			// 在 `methods` 对象中定义方法
+			methods:{
+				// `e` 是原生 DOM 事件
+				clear:function(e){
+					this.count = 0
+					alert('Clear the count')
+					if (e) {
+						alert(e.target.tagName)
+					}
+				}
+			}
+		})
+	</script>
+
+	<!-- 按键修饰 -->
+	<script>
+		var v_on_keymap_modifier = new Vue({
+			el:'#v-on-keymap-modifier',
+			data:{
+				iMsg:'',
+				showMsgText:'',
+				inputClear:'',
+				inputAlert:'',
+				message:'按钮'
+			},
+			methods:{
+				showMsg:function(){
+					this.showMsgText += this.iMsg
+					this.iMsg = ''
+				},
+				reset:function(){
+					this.iMsg = ''
+					this.showMsgText = ''
+				},
+				clear:function(){
+					this.inputClear = ''
+				},
+				iAlert:function(){
+					alert(this.inputAlert)
+				},
+				enter(){
+			      this.message = 'enter'
+			    },
+			    tab(){
+			      this.message = 'tab'
+			    },
+			    delete1(){
+			      this.message = 'delete'
+			    }, 
+			    esc(){
+			      this.message = 'esc'
+			    },
+			    space(){
+			      this.message = 'space'
+			    },
+			    up(){
+			      this.message = 'up'
+			    },
+			    down(){
+			      this.message = 'down'
+			    },
+			    left(){
+			      this.message = 'left'
+			    },
+			    right(){
+			      this.message = 'right'
+			    }                
+			}
+		})
+	</script>
+</body>
+</html>

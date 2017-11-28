@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Vue 组件 Component</title>
+	<script src="https://cdn.bootcss.com/vue/2.4.2/vue.min.js"></script>
+</head>
+<body>
+	<div id="component-first">
+		<e-component></e-component>
+		<my-component/>
+	</div>
+	<hr/><br>
+<!-- 当使用 DOM 作为模板时 (例如，使用 el 选项来把 Vue 实例挂载到一个已有内容的元素上)，你会受到 HTML 本身的一些限制，因为 Vue 只有在浏览器解析、规范化模板之后才能获取其内容。尤其要注意，像 <ul>、<ol>、<table>、<select> 这样的元素里允许包含的元素有限制，而另一些像 <option> 这样的元素只能出现在某些特定元素的内部。
+<table>
+  <my-row>...</my-row>
+</table>
+自定义组件 <my-row> 会被当作无效的内容，因此会导致错误的渲染结果。变通的方案是使用特殊的 is 特性：
+	<table><tr is="my-row"/></table>
+
+	而当<script type="text/x-template"> 没有该限制.所以 应该尽可能的使用字符串模板
+ -->
+	
+	<div id="data-component">
+		<data-component></data-component>
+		<data-component></data-component>
+		<data-component></data-component>
+		<data-component></data-component>
+		<!-- <my-component/> -->
+	</div>
+	
+	<br>
+	<hr>
+
+	<!-- 组件组合 -->
+	<!-- 组件设计的初衷就是要一起配合使用的,,最常见的就是形成父子组合关系,组件A在它的模板中使用了组件B,它们之间有数据互通:父组件可能要给子组件下发数据,子组件则可能要将它内部发生的事情告知父组件.
+	在Vue中,父子组件的关系可以总结为prop向下传递数据,事件向上传递.即父组件通过prop给子组件下发数据,子组件则通过事件传递来给父组件发送消息.
+	 -->
+	<div id="prop-component">
+		<!-- HTML 特性是不区分大小写的。所以，当使用的不是字符串模板时，camelCase (驼峰式命名) 的 prop 需要转换为相对应的 kebab-case (短横线分隔式命名)：
+		如果你使用字符串模板，则没有这些限制。 -->
+		<prop-component prop-Message="Hello propMessage"></prop-component>
+	</div>
+	<br/>
+
+	<!-- 组件复合 动态绑定 -->
+	<div id="dynamic-prop-component">
+		<input type="text" v-model="parentMessage">
+		<br>
+		<!-- 如果你想把一个对象的所有属性作为 prop 进行传递，可以使用不带任何参数的 v-bind (即用 v-bind 而不是 v-bind:prop-name).  -->
+		<dynamic-prop-component :dynamic-Prop-Message="parentMessage"></dynamic-prop-component>
+	</div>
+	<hr><br>
+
+	<div id="initalCounter">
+		<input type="text" v-model.lazy.number="count">
+		<!-- 转为number 不然会被当成字符串 -->
+		<inital :inital-Counter.number="count"></inital>
+	</div>
+
+
+	<div id="verify-prop-component">
+		<input id="verifyInputValue" v-model="verifyInputValue"/>
+		<!-- zhichuandi yong bind -->
+		<verify-prop-component :verify-Input="2"></verify-prop-component>
+	</div>
+
+	<div id="Non-Prop-characteristics">
+		<!-- 所谓非 prop 特性，就是指它可以直接传入组件，而不需要定义相应的 prop。这两个特性的值会做合并 (merge) 操作 -->
+		<characteristics class="a-demo"></characteristics>
+	</div>
+
+
+	<script>
+		var Non_Prop_characteristics = new Vue({
+			el:'#Non-Prop-characteristics',
+			components:{
+				'characteristics':{
+					template:'<p class="prop">prop</p>'
+				}
+			}
+		})
+
+		var verify_prop_component = new Vue({
+			el:'#verify-prop-component',
+			data:{
+				verifyInputValue:0
+			},
+			components:{
+				'verify-prop-component':{
+					// 传值校验
+					//要指定验证规则，需要用对象的形式来定义 prop，而不能用字符串数组
+					props:{
+						verifyInput:Number
+					},
+					template:'<button id="verifyInput" v-model="verifyInput"> {{verifyInput}} </button>'
+				}
+			}
+
+		})
+
+		var initalCounter = new Vue({
+			el:'#initalCounter',
+			data:{
+				count:0
+			},
+			components:{
+				inital:{
+					props:['initalCounter'],
+					/*template:"<button v-on:click='counter += 1'>{{ counter }}</button>",*/
+					template:"<button v-on:click='initalCounter += 1'>{{ initalCounter }}</button>",
+				data:function(){
+					return {
+						/* 这种方式不会动态变化 只是第一次初始化 然后就有了值*/
+						counter:this.initalCounter + 1
+					}
+				}
+				}
+			}
+		})
+		var dynamic_prop_component = new Vue({
+			el:'#dynamic-prop-component',
+			data:{
+				parentMessage:''
+			},
+			components:{
+				'dynamic-prop-component':{
+					template:'<sapn>{{dynamicPropMessage}}</span>',
+					props:['dynamicPropMessage']
+				}
+			}
+		})
+
+		var prop_component = new Vue({
+			el:'#prop-component',
+			components:{
+				"prop-component":{
+					// 声明props 声明后才能进行传值
+					props:['propMessage'],
+					 // 就像 data 一样，prop 也可以在模板中使用
+					  // 同样也可以在 vm 实例中通过 this.propMessage 来使用
+					template:'<span>{{ propMessage }}</span>'
+				}
+			}
+		})
+
+
+		/* 注册一个全局组件 确保在初始化根实例之前已经注册组件 !!! */
+		Vue.component('my-component',{
+			template:'<div>First Component</div>'
+		})
+		/*Vue.component('data-component',{
+			template:"<button v-on:click='count += 1'> {{ count }} </button>",
+			data:function() {
+				return {
+					count:0
+				}
+			}
+		})*/
+
+
+		var data_component = new Vue({
+			el:'#data-component',
+			components:{
+				"data-component":{
+					template:"<button v-on:click='count += 1'> {{ count }} </button>",
+					/* 组件中的data必须为函数,而且返回的是对象,但是返回同一个对象,在组件复用时会出现问题 */
+					data:function() {
+						return {
+							count:0
+						}
+					}
+				}
+			}
+		})
+
+		/* 实例化一个根实例 其中id为component的元素用到了 组件*/
+		var component_first = new Vue({
+			el:'#component-first',
+			/* 局部组件 最多只能在父级里使用 */
+			components:{
+				"e-component":{
+					/* 也可以封装Vue指令等 */
+				  template: '<div>A custom component!</div>'
+				}
+			}
+		})
+	</script>
+</body>
+</html>

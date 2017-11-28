@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>v-bind绑定</title>
+	<script src="https://unpkg.com/vue"></script>
+</head>
+<body>
+	<div id="classBind" class="static" v-bind:class="{active:isActive,'text-danger':hasErr}">
+		<p>ClassBind {{ isActive }}</p>
+	</div>
+
+	<div id="classBindObj" v-bind:class="classObj">
+		<p>{{ classObj }}</p>
+	</div>
+
+	<div id="classBindComputed" :class="classComputed">
+		<p>{{ classComputed }}</p>
+	</div>
+
+	<div id="classbindArr" :class="[activeClass,errorClass]">
+		<p v-once> {{ classStr }}</p>
+		<p v-once> {{ activeClass + ' ' + errorClass }}</p>
+	</div>
+
+	<div id="classBindIf" :class="[{active:isActive},errorClass]">
+		<p>&lt; isn &gt;</p>
+	</div>
+
+	<div id="componentBind">
+		<my-component class="boo baz"></my-component>
+		<my-component :class="{active:isActive}"></my-component>
+	</div>
+
+	<div id="styleBind" :style="{ color: activeColor, fontSize: fontSize + 'px' }">
+		<p>v-bind:style 的对象语法十分直观——看着非常像 CSS，但其实是一个 JavaScript 对象。</p>
+	</div>
+
+	<div id="styleBind2" :style="styleObj">
+		<p>CSS 属性名可以用驼峰式 (camelCase) 或短横线分隔 (kebab-case，记得用单引号括起来) 来命名：</p>
+	</div>
+
+<script>
+	var styleBind2 = new Vue({
+		el:'#styleBind2',
+		data:{
+			styleObj:{
+				color:'red',
+				fontSize:'16px'
+			}
+		}
+	})
+
+	var styleBind = new Vue({
+		el:'#styleBind',
+		data:{
+			activeColor:'green',
+			fontSize:16
+		}
+	})
+
+	Vue.component('my-component',{
+		template:"<p class='foo bar'>Hi</p>"
+	})
+	var componentBind = new Vue({
+		el:'#componentBind',
+		data:{
+			isActive:true
+		}
+	})
+
+	var classBindIf = new Vue({
+		el:'#classBindIf',
+		data:{
+			isActive:true,
+			errorClass:['hasErr','error']
+		}
+	})
+	var classbindArr = new Vue({
+		el:'#classbindArr',
+		data:{
+			activeClass:['active','static'],
+			errorClass:'text_danger'
+			/*短横线需要引号,下划线不需要*/
+		},
+		computed:{
+			classStr:function(){
+			return this.activeClass + ' ' + this.errorClass
+			}
+		}
+	})
+
+	var classBindComputed = new Vue({
+		el:'#classBindComputed',
+		data:{
+			isActive:true,
+			hasErr:null
+		},
+		computed:{
+			classComputed:function() {
+				return {
+					active:this.isActive && !this.hasErr,
+					text_danger:this.hasErr && this.hasErr.type === 'fatal'
+				}
+			}
+		}
+	})
+
+	var valssBindObj = new Vue({
+		el:'#classBindObj',
+		data:{
+			classObj:{
+				active:false,
+				text_danger:true
+			}
+		}
+	})
+
+	var classBind = new Vue({
+		el:'#classBind',
+		data:{
+			isActive:true,
+			hasErr:false
+		}
+	})
+
+</script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title></title>
+</head>
+<body>
+	<button onclick="javascript:load()">开始</button><p id="showGameInf"></p>
+	<script type="text/javascript">  
+		function load(){
+			for(var i = 0 ; i < 5 ; i++){  
+		    	var arr = [1,2,5,7,8];  
+		    	var j = 0; 
+		　　　　setTimeout(function() {
+					console.log(i);
+					document.getElementById("showGameInf").innerHTML = arr[j++];
+		　　　　},i*1000); 
+   			}
+		};
+
+		var dateVal = new Date().getTime();
+		var t = null;
+    	//t = setTimeout(timer,1000);//开始执行
+		function timer(){
+			//clearTimeout(t);
+			console.log("原 " + dateVal);
+			var date = new Date(dateVal);
+			console.log(date + ' date');
+			dateVal += 1000;
+			console.log(dateVal);
+			t = setTimeout(timer,1000);
+		};
+
+		timer();
+    </script>
+
+</body>
+</html>
