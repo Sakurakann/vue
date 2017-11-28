@@ -6,15 +6,15 @@
 </head>
 <body>
 	<button onclick="javascript:load()">开始</button><p id="showGameInf"></p>
-	<script type="text/javascript">  
+	<script type="text/javascript">
 		function load(){
-			for(var i = 0 ; i < 5 ; i++){  
-		    	var arr = [1,2,5,7,8];  
-		    	var j = 0; 
+			for(var i = 0 ; i < 5 ; i++){
+		    	var arr = [1,2,5,7,8];
+		    	var j = 0;
 		　　　　setTimeout(function() {
 					console.log(i);
 					document.getElementById("showGameInf").innerHTML = arr[j++];
-		　　　　},i*1000); 
+		　　　　},i*1000);
    			}
 		};
 
