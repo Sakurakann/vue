@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <script src="https://cdn.bootcss.com/vue/2.4.2/vue.min.js"></script>
+  <script src="https://cdn.bootcss.com/vue/2.5.2/vue.min.js"></script>
   <title>Vue 插槽分发</title>
 </head>
 
@@ -64,9 +64,9 @@
  -->
   <div id="slot-demo4">
     <div class="parent">
-      <child scope="ps">
-        <!-- <template slot-scope="ps"> 官网上错误写法-->
-        <template >
+      <child>
+        <!-- <template scope="ps"> 2.4.2版本写法-->
+        <template slot-scope="ps">
           <span>hello parent</span>
           <br>
           <span>{{ ps.text }}</span>
@@ -75,8 +75,101 @@
     </div>
   </div>
 
+  <!-- 解构 -->
+  <div id="slot-demo5">
+    <div class="parent">
+      <child class="child">
+        <!-- 2.5.0以上版本,scope不限制必须在template中,也可以作用于其他标签
+          本次使用的为2.4
+        -->
+        <sapn slot-scope="{ text:t }">{{ t }}</sapn>
+      </child>
+    </div>
+  </div>
+  <hr>
+
+  <!-- 通过使用保留的 <component> 元素，动态地绑定到它的 is 特性，
+  我们让多个组件可以使用同一个挂载点，并动态切换 -->
+  <div id="dynamic-component">
+    <input type="text" v-model.lazy="currentview">
+    <input type="text" v-model="currentview">
+    <span>{{currentview}}</span><br><br>
+    <!-- 绑定click事件 -->
+    <button @click="changeview" value="hello">Hello</button>
+    <button @click="changeview" value="hi">Hi</button>
+    <button @click="changeview" value="h">H</button>
+
+    <!-- <component :is="currentview"></component> -->
+
+    <!-- 如果把切换出去的组件保留在内存中，可以保留它的状态或避免重新渲染。
+    为此可以添加一个 keep-alive标签包裹,提升加载速度 -->
+    <keep-alive>
+      <component :is="currentview"></component>
+    </keep-alive>
+  </div>
+
+  <div id="child-ref">
+    <div class="parent">
+      <!-- 当 ref 和 v-for 一起使用时，获取到的引用会是一个数组 -->
+      <child text="h" ref="cref1">
+      </child>
+    </div>
+  </div>
+
 
   <script>
+    var child_ref = new Vue({
+      el:'#child-ref',
+      components:{
+        'child':{
+            props:{
+            text:{
+              type:String
+            }
+          },
+          template:'<span>child: {{text}}</span>'
+        }
+      }
+    })
+//通过父组件 获取子组件对象. 固定格式:parentVar.$refs.refValue
+//$refs 只在组件渲染完成后才填充，并且它是非响应式的。它仅仅是一个直接操作子组件的应急方案
+//——应当避免在模板或计算属性中使用 $refs
+    var child = child_ref.$refs.cref1
+    child.text = "ss"
+
+
+    var slot_demo6 = new Vue({
+      el:'#dynamic-component',
+      data:{
+        currentview:'hello'
+      },
+      methods:{
+        changeview:function(event) {
+          this.currentview = event.target.value
+        }
+      },
+      components:{
+        'hello':{
+          template:'<p>hello</p>'
+        },
+        'hi':{
+          template:'<p>hi</p>'
+        },
+        'h':{
+          template:'<p>h</p>'
+        }
+      }
+    })
+
+    var slot_demo5 = new Vue({
+      el:'#slot-demo5',
+      components:{
+        'child':{
+          template:'<div><slot text="hello child"></slot></div>'
+        }
+      }
+    })
+
     var slot_demo4 = new Vue({
       el:'#slot-demo4',
       // data:{
